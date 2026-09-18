@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import './index.css';
 import { api } from './api';
 import type { District, DistrictDetail, StationDetail } from './api';
+import Landing from './Landing';
 
 const LABEL_HINT: Record<string, string> = {
   safe: 'Safe', semi_critical: 'Semi-critical', critical: 'Critical', over_exploited: 'Over-exploited',
@@ -47,6 +48,7 @@ function TrendChart({ series, forecast }: {
 }
 
 export default function App() {
+  const [page, setPage] = useState<'landing' | 'dashboard'>('landing');
   const [summary, setSummary] = useState<Awaited<ReturnType<typeof api.summary>> | null>(null);
   const [districts, setDistricts] = useState<District[]>([]);
   const [stateF, setStateF] = useState('');
@@ -89,10 +91,14 @@ export default function App() {
 
   return (
     <>
-      <header>
-        <div className="head-row">
-          <div>
-            <h1>Strata</h1>
+      {page === 'landing' ? (
+        <Landing onOpen={() => setPage('dashboard')} />
+      ) : (
+        <>
+          <header>
+            <div className="head-row">
+              <div>
+                <h1 style={{ cursor: 'pointer' }} onClick={() => setPage('landing')}>Strata</h1>
             <p className="sub">Groundwater levels across Punjab and Rajasthan · 802 DWLR stations · 2022–2025</p>
           </div>
           <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -211,6 +217,8 @@ export default function App() {
         </div>
       </div>
       <footer>Larger depth = worse · 30-day linear forecast · Alert threshold: P(cross 35 m in 90 days) ≥ 0.235</footer>
+        </>
+      )}
     </>
   );
 }
