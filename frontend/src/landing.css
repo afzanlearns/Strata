@@ -59,12 +59,13 @@
 }
 
 /* ── Hero ── */
-.sec-hero { background: var(--bg); }
+.sec-hero { background: var(--bg); padding-top: 0; padding-bottom: 0; }
 .hero-grid {
   display: grid;
   grid-template-columns: 1fr 1.15fr;
   gap: 56px;
   align-items: center;
+  min-height: 100dvh;
 }
 .hero-badge {
   display: inline-block;

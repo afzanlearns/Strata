@@ -230,7 +230,6 @@ export default function Landing({ onOpen, theme, setTheme }: { onOpen: () => voi
       <section className="sec sec-hero">
         <div className="sec-content hero-grid">
           <div className="hero-text">
-            <span className="hero-badge">SIH25068 · Ministry of Jal Shakti</span>
             <h1>Strata</h1>
             <p className="hero-sub">
               Real-time groundwater monitoring for Punjab and Rajasthan. 802 stations, 2022–2025 telemetry, ML-powered forecasting.
@@ -359,7 +358,7 @@ export default function Landing({ onOpen, theme, setTheme }: { onOpen: () => voi
       {/* ── Footer ── */}
       <footer className="site-footer">
         <div className="footer-inner">
-          <span>Strata · SIH25068</span>
+          <span>Strata</span>
           <span>Depth convention: larger = deeper = worse</span>
           <span>Forecast: 30-day linear · Risk threshold: 0.235</span>
         </div>
