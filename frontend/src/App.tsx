@@ -93,7 +93,7 @@ export default function App() {
         <div className="head-row">
           <div>
             <h1>Strata</h1>
-            <p className="sub">Groundwater resource evaluation · SIH25068 · Ministry of Jal Shakti · Punjab + Rajasthan DWLR telemetry, 2022–2025</p>
+            <p className="sub">Groundwater levels across Punjab and Rajasthan · 802 DWLR stations · 2022–2025</p>
           </div>
           <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             aria-label="Toggle dark mode">
@@ -210,7 +210,7 @@ export default function App() {
           </div>
         </div>
       </div>
-      <footer>Strata · SIH25068 · Depth convention: larger means deeper and worse · Forecast: 30-day linear model vs persistence baseline · Risk: P(depth crosses 35 m within 90 days), alert threshold 0.235</footer>
+      <footer>Larger depth = worse · 30-day linear forecast · Alert threshold: P(cross 35 m in 90 days) ≥ 0.235</footer>
     </>
   );
 }
