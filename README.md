@@ -38,6 +38,13 @@ block categories as labels. See `docs/phase0-scoping.md`.
 `python backend/seed.py && python -m uvicorn backend.app:app --port 8000` → open
 http://127.0.0.1:8000
 
+## Production data refresh
+- Full inference: `python ml/batch_infer.py` (forecasts + crossing risk, all stations)
+- MySQL instead of SQLite: create the DB, then
+  `DATABASE_URL=mysql+pymysql://user:pw@host/strata python backend/seed.py`
+  (local test used `mysql+pymysql://root:root@127.0.0.1/strata_test` — identical results)
+- After frontend changes: `npm run build` in `frontend/` and copy `dist/` → `backend/static/`
+
 ## Writeups
 - `docs/dm-mapping.md` — Data Mining syllabus mapping
 - `docs/ml-mapping.md` — Machine Learning syllabus mapping
