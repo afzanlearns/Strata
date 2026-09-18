@@ -26,11 +26,32 @@ const FAQ = [
 
 function PipelineDiagram() {
   const stages = [
-    { icon: '⬆', label: 'CGWB Sensors', sub: 'DWLR telemetry', color: 'var(--green-mid)' },
-    { icon: '⚙', label: 'Preprocessing', sub: 'Sign unify · QA · Quarantine', color: 'var(--green-mid)' },
-    { icon: '🧠', label: 'ML Pipeline', sub: 'Forecast · Classify · Cluster', color: 'var(--accent)' },
-    { icon: '⚡', label: 'FastAPI', sub: 'SQLite / MySQL', color: 'var(--accent)' },
-    { icon: '📊', label: 'Dashboard', sub: 'React + TypeScript', color: 'var(--green-mid)' },
+    { label: 'CGWB Sensors', sub: 'DWLR telemetry', color: 'var(--green-mid)', icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--green-mid)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2v6m0 0l-3-3m3 3l3-3"/><rect x="4" y="10" width="16" height="10" rx="2"/><line x1="8" y1="14" x2="8" y2="16"/><line x1="12" y1="14" x2="12" y2="16"/><line x1="16" y1="14" x2="16" y2="16"/>
+      </svg>
+    )},
+    { label: 'Preprocessing', sub: 'Sign unify · QA · Quarantine', color: 'var(--green-mid)', icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--green-mid)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/>
+        <circle cx="12" cy="7" r="3"/><circle cx="18" cy="2" r="2"/><circle cx="6" cy="14" r="2"/>
+      </svg>
+    )},
+    { label: 'ML Pipeline', sub: 'Forecast · Classify · Cluster', color: 'var(--accent)', icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+      </svg>
+    )},
+    { label: 'FastAPI', sub: 'SQLite / MySQL', color: 'var(--accent)', icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+    )},
+    { label: 'Dashboard', sub: 'React + TypeScript', color: 'var(--green-mid)', icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--green-mid)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+    )},
   ];
   return (
     <div className="pipeline-row">
@@ -41,7 +62,11 @@ function PipelineDiagram() {
             <span className="pipeline-label">{s.label}</span>
             <span className="pipeline-sub">{s.sub}</span>
           </div>
-          {i < stages.length - 1 && <div className="pipeline-arrow">→</div>}
+          {i < stages.length - 1 && (
+            <svg className="pipeline-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--green-mid)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="12" x2="20" y2="12"/><polyline points="14 6 20 12 14 18"/>
+            </svg>
+          )}
         </div>
       ))}
     </div>

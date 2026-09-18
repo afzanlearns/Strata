@@ -200,10 +200,8 @@
 .pipeline-label { font-size: 13px; font-weight: 620; color: var(--ink); }
 .pipeline-sub { font-size: 11px; color: var(--muted); line-height: 1.35; }
 .pipeline-arrow {
-  font-size: 20px;
-  color: var(--green-mid);
-  padding: 0 8px;
   flex: 0 0 auto;
+  padding: 0 4px;
 }
 
 /* ── Features ── */
@@ -298,6 +296,7 @@
 .sec-faq { background: var(--panel); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); }
 .faq-list {
   max-width: 640px;
+  margin: 0 auto;
 }
 .faq-item {
   border: 1px solid var(--border);
