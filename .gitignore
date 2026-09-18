@@ -1,0 +1,24 @@
+# deps + build outputs
+node_modules/
+frontend/dist/
+__pycache__/
+*.py[cod]
+
+# databases (regenerable via backend/seed.py)
+*.db
+*.sqlite3
+
+# raw + processed data (large / regenerable; provenance stays tracked)
+data/raw/*.csv
+data/processed/*.csv
+!data/raw/PROVENANCE.md
+
+# logs + OS noise
+*.log
+.DS_Store
+Thumbs.db
+
+# local virtualenvs
+.venv/
+pyvenv/
+venv/
