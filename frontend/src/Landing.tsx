@@ -4,106 +4,184 @@ import './landing.css';
 const FAQ = [
   {
     q: 'What data does STRATA use?',
-    a: 'Real-time telemetry from CGWB Deep Water Level Recorders (DWLR) across Punjab and Rajasthan — approximately 802 stations, 2 million rows, spanning September 2022 to December 2025.',
+    a: 'Real-time telemetry from CGWB Deep Water Level Recorders across Punjab and Rajasthan — 802 stations, ~2 million rows, September 2022 to December 2025.',
   },
   {
     q: 'Why is "larger depth" worse?',
-    a: 'Depth-to-water measures how far below the surface the water table sits. A larger number means the water is deeper — the aquifer is more depleted. The sign convention is locked: larger = deeper = worse.',
+    a: 'Depth-to-water measures how far below the surface the water table sits. A larger number means the water is deeper — the aquifer is more depleted. Convention: larger = deeper = worse.',
   },
   {
     q: 'How does the 30-day forecast work?',
-    a: 'A simple linear trend projected forward 30 days, compared against a persistence baseline (yesterday\'s depth = tomorrow\'s). The high R² (0.994) is a "persistence mirage" — water levels change slowly, so yesterday\'s value is already a strong predictor.',
+    a: 'A linear trend projected forward 30 days, compared against a persistence baseline. The high R² (0.994) is a "persistence mirage" — water levels change slowly, so yesterday\'s value is already a strong predictor.',
   },
   {
     q: 'What does the crossing-risk percentage mean?',
-    a: 'It\'s the probability that a station\'s depth will cross 35 metres within 90 days, estimated by an MLP neural network. The alert threshold is 0.235 — above that, the badge turns red ("Elevated").',
+    a: 'The probability that a station\'s depth will cross 35 metres within 90 days, estimated by an MLP neural network. Alert threshold: 0.235 — above that, the badge turns red ("Elevated").',
   },
   {
     q: 'What are quarantine flags?',
-    a: 'Readings flagged as sensor-level issues: `mad_outlier` (statistical outlier), `nonphysical` (impossible value), `datum_shift` (abrupt jump), `gap` (missing data). Rows are never deleted — the `qflag` column makes them queryable so you can still see what was flagged and why.',
-  },
-  {
-    q: 'What do the association rules show?',
-    a: 'How districts co-occur in the same groundwater category (Safe / Semi-critical / Critical / Over-exploited) across Kharif and Rabi seasons. Lift > 1 means the pattern is stronger than random chance — useful for regional planning.',
-  },
-  {
-    q: 'How are the ML techniques validated?',
-    a: 'Classification (kNN, Decision Tree, Naive Bayes) uses train/test split with macro-F1 scoring. Regression compares against a persistence baseline. Clustering uses silhouette score and Adjusted Rand Index against hierarchical clustering. Association rules are filtered by lift > 1.',
-  },
-  {
-    q: 'Can I switch between light and dark mode?',
-    a: 'Yes — the toggle is in the top-right corner of the dashboard. Your preference is saved in localStorage and respects your OS setting on first visit.',
+    a: 'Sensor-level issue flags: mad_outlier, nonphysical, datum_shift, gap. Rows are never deleted — the qflag column makes them queryable so you can see what was flagged and why.',
   },
 ];
 
-function WireDiagram() {
+function PipelineDiagram() {
+  const stages = [
+    { icon: '⬆', label: 'CGWB Sensors', sub: 'DWLR telemetry', color: 'var(--green-mid)' },
+    { icon: '⚙', label: 'Preprocessing', sub: 'Sign unify · QA · Quarantine', color: 'var(--green-mid)' },
+    { icon: '🧠', label: 'ML Pipeline', sub: 'Forecast · Classify · Cluster', color: 'var(--accent)' },
+    { icon: '⚡', label: 'FastAPI', sub: 'SQLite / MySQL', color: 'var(--accent)' },
+    { icon: '📊', label: 'Dashboard', sub: 'React + TypeScript', color: 'var(--green-mid)' },
+  ];
   return (
-    <svg viewBox="0 0 700 120" className="wire-diagram" aria-label="Data flow diagram">
-      {[
-        { x: 20, label: 'CGWB\nSensors', color: 'var(--green-mid)' },
-        { x: 180, label: 'Preprocessing\n& QA', color: 'var(--green-mid)' },
-        { x: 340, label: 'ML Pipeline\nForecasting', color: 'var(--accent)' },
-        { x: 500, label: 'FastAPI\nBackend', color: 'var(--accent)' },
-        { x: 640, label: 'React\nDashboard', color: 'var(--green-mid)' },
-      ].map((b, i, arr) => (
-        <g key={i}>
-          {i < arr.length - 1 && (
-            <line x1={b.x + 50} y1={60} x2={arr[i + 1].x - 10} y2={60}
-              stroke="var(--border)" strokeWidth="1.5" strokeDasharray="4 3" />
-          )}
-          <rect x={b.x - 40} y={25} width={100} height={70} rx={6}
-            fill="var(--panel)" stroke={b.color} strokeWidth="1.5" />
-          {b.label.split('\n').map((line, li) => (
-            <text key={li} x={b.x + 10} y={58 + li * 16}
-              textAnchor="middle" fontSize="11.5" fontWeight="500"
-              style={{ fill: 'var(--ink)' }}>{line}</text>
-          ))}
-        </g>
+    <div className="pipeline-row">
+      {stages.map((s, i) => (
+        <div key={i} className="pipeline-stage">
+          <div className="pipeline-box" style={{ borderColor: s.color }}>
+            <span className="pipeline-icon">{s.icon}</span>
+            <span className="pipeline-label">{s.label}</span>
+            <span className="pipeline-sub">{s.sub}</span>
+          </div>
+          {i < stages.length - 1 && <div className="pipeline-arrow">→</div>}
+        </div>
       ))}
+    </div>
+  );
+}
+
+function StepMockup({ step }: { step: number }) {
+  if (step === 1) return (
+    <svg viewBox="0 0 240 140" className="step-mock">
+      <rect width="240" height="140" rx="4" fill="var(--panel)" stroke="var(--border)" strokeWidth="0.75" />
+      <rect x="8" y="8" width="72" height="124" rx="3" fill="var(--faint)" stroke="var(--border-soft)" strokeWidth="0.5" />
+      <text x="14" y="22" fontSize="7" fontWeight="500" style={{ fill: 'var(--muted)' }}>Districts</text>
+      <rect x="12" y="28" width="64" height="14" rx="2" fill="var(--panel)" stroke="var(--border-soft)" strokeWidth="0.4" />
+      <text x="16" y="38" fontSize="6" style={{ fill: 'var(--ink)' }}>Ludhiana</text>
+      <rect x="12" y="46" width="64" height="14" rx="2" fill="var(--accent-soft)" stroke="var(--accent)" strokeWidth="0.5" />
+      <text x="16" y="56" fontSize="6" fontWeight="600" style={{ fill: 'var(--accent)' }}>Patiala</text>
+      <rect x="12" y="64" width="64" height="14" rx="2" fill="var(--panel)" stroke="var(--border-soft)" strokeWidth="0.4" />
+      <text x="16" y="74" fontSize="6" style={{ fill: 'var(--ink)' }}>Amritsar</text>
+      <rect x="12" y="82" width="64" height="14" rx="2" fill="var(--panel)" stroke="var(--border-soft)" strokeWidth="0.4" />
+      <text x="16" y="92" fontSize="6" style={{ fill: 'var(--ink)' }}>Jalandhar</text>
+      <rect x="88" y="8" width="144" height="124" rx="3" fill="var(--panel)" stroke="var(--border-soft)" strokeWidth="0.5" />
+      <text x="94" y="22" fontSize="7" fontWeight="500" style={{ fill: 'var(--muted)' }}>District overview</text>
+      <text x="94" y="38" fontSize="8" fontWeight="600" style={{ fill: 'var(--ink)' }}>Patiala</text>
+      <rect x="120" y="32" width="36" height="10" rx="5" fill="var(--semi-bg)" />
+      <text x="130" y="40" fontSize="5" fontWeight="500" style={{ fill: 'var(--semi-tx)' }}>Semi-crit</text>
+      <text x="94" y="54" fontSize="6" style={{ fill: 'var(--muted)' }}>Wells</text>
+      <text x="120" y="54" fontSize="6" fontWeight="600" style={{ fill: 'var(--ink)' }}>42</text>
+      <text x="94" y="66" fontSize="6" style={{ fill: 'var(--muted)' }}>Median</text>
+      <text x="120" y="66" fontSize="6" fontWeight="600" style={{ fill: 'var(--ink)' }}>18.4 m</text>
+      <text x="94" y="78" fontSize="6" style={{ fill: 'var(--muted)' }}>Δ / yr</text>
+      <text x="120" y="78" fontSize="6" fontWeight="600" style={{ fill: 'var(--crit-tx)' }}>+0.82</text>
+    </svg>
+  );
+  if (step === 2) return (
+    <svg viewBox="0 0 240 140" className="step-mock">
+      <rect width="240" height="140" rx="4" fill="var(--panel)" stroke="var(--border)" strokeWidth="0.75" />
+      <text x="12" y="18" fontSize="7" fontWeight="600" style={{ fill: 'var(--ink)' }}>PB-PTL-0042</text>
+      <rect x="140" y="10" width="52" height="14" rx="7" fill="var(--crit-bg)" />
+      <text x="152" y="20" fontSize="6" fontWeight="500" style={{ fill: 'var(--crit-tx)' }}>72.3%</text>
+      <polyline points="12,60 36,55 60,58 84,48 108,52 132,45 156,40 180,38 200,35 220,32"
+        fill="none" stroke="var(--chart-line)" strokeWidth="1.2" />
+      <polyline points="200,35 215,30 228,27"
+        fill="none" stroke="var(--accent)" strokeWidth="1.2" strokeDasharray="3 2" />
+      <text x="12" y="80" fontSize="6" style={{ fill: 'var(--muted)' }}>Depth (m)</text>
+      <line x1="12" y1="88" x2="228" y2="88" stroke="var(--border-soft)" strokeWidth="0.4" />
+      <text x="12" y="98" fontSize="6" style={{ fill: 'var(--chart-line)' }}>— observed</text>
+      <text x="80" y="98" fontSize="6" style={{ fill: 'var(--accent)' }}>- - forecast</text>
+      <text x="12" y="114" fontSize="6" style={{ fill: 'var(--muted)' }}>Median depth</text>
+      <text x="80" y="114" fontSize="6" fontWeight="600" style={{ fill: 'var(--ink)' }}>18.4 m</text>
+      <text x="12" y="126" fontSize="6" style={{ fill: 'var(--muted)' }}>Annual change</text>
+      <text x="80" y="126" fontSize="6" fontWeight="600" style={{ fill: 'var(--crit-tx)' }}>+0.82 m/yr</text>
+    </svg>
+  );
+  if (step === 3) return (
+    <svg viewBox="0 0 240 140" className="step-mock">
+      <rect width="240" height="140" rx="4" fill="var(--panel)" stroke="var(--border)" strokeWidth="0.75" />
+      <text x="12" y="18" fontSize="7" fontWeight="500" style={{ fill: 'var(--muted)' }}>Anomaly alerts</text>
+      <rect x="12" y="24" width="216" height="30" rx="3" fill="var(--panel)" stroke="var(--border-soft)" strokeWidth="0.5" />
+      <text x="18" y="38" fontSize="6" fontWeight="600" style={{ fill: 'var(--ink)' }}>PB-AMR-0018</text>
+      <text x="18" y="48" fontSize="5.5" style={{ fill: 'var(--muted)' }}>Amritsar · 1.2 m/yr</text>
+      <rect x="170" y="30" width="48" height="12" rx="6" fill="var(--crit-bg)" />
+      <text x="180" y="39" fontSize="5" fontWeight="500" style={{ fill: 'var(--crit-tx)' }}>Flagged</text>
+      <rect x="12" y="58" width="216" height="30" rx="3" fill="var(--panel)" stroke="var(--border-soft)" strokeWidth="0.5" />
+      <text x="18" y="72" fontSize="6" fontWeight="600" style={{ fill: 'var(--ink)' }}>RJ-JAI-0007</text>
+      <text x="18" y="82" fontSize="5.5" style={{ fill: 'var(--muted)' }}>Jaipur · 0.8 m/yr</text>
+      <rect x="170" y="64" width="48" height="12" rx="6" fill="var(--crit-bg)" />
+      <text x="180" y="73" fontSize="5" fontWeight="500" style={{ fill: 'var(--crit-tx)' }}>Flagged</text>
+      <rect x="12" y="92" width="216" height="30" rx="3" fill="var(--panel)" stroke="var(--border-soft)" strokeWidth="0.5" />
+      <text x="18" y="106" fontSize="6" fontWeight="600" style={{ fill: 'var(--ink)' }}>RJ-JDR-0031</text>
+      <text x="18" y="116" fontSize="5.5" style={{ fill: 'var(--muted)' }}>Jodhpur · 2.1 m/yr</text>
+      <rect x="170" y="98" width="48" height="12" rx="6" fill="var(--crit-bg)" />
+      <text x="180" y="107" fontSize="5" fontWeight="500" style={{ fill: 'var(--crit-tx)' }}>Flagged</text>
+    </svg>
+  );
+  return (
+    <svg viewBox="0 0 240 140" className="step-mock">
+      <rect width="240" height="140" rx="4" fill="var(--panel)" stroke="var(--border)" strokeWidth="0.75" />
+      <text x="12" y="18" fontSize="7" fontWeight="500" style={{ fill: 'var(--muted)' }}>Association rules</text>
+      <rect x="12" y="24" width="216" height="32" rx="3" fill="var(--panel)" stroke="var(--border-soft)" strokeWidth="0.5" />
+      <text x="18" y="36" fontSize="6" style={{ fill: 'var(--ink)' }}>
+        <tspan fontWeight="600">Patiala=SC</tspan> → <tspan fontWeight="600">Ludhiana=C</tspan>
+      </text>
+      <text x="18" y="48" fontSize="5.5" style={{ fill: 'var(--muted)' }}>sup 0.12 · conf 0.78 · lift 2.31</text>
+      <rect x="12" y="60" width="216" height="32" rx="3" fill="var(--panel)" stroke="var(--border-soft)" strokeWidth="0.5" />
+      <text x="18" y="72" fontSize="6" style={{ fill: 'var(--ink)' }}>
+        <tspan fontWeight="600">Amritsar=OE</tspan> → <tspan fontWeight="600">Jalandhar=SC</tspan>
+      </text>
+      <text x="18" y="84" fontSize="5.5" style={{ fill: 'var(--muted)' }}>sup 0.09 · conf 0.65 · lift 1.84</text>
+      <rect x="12" y="96" width="216" height="32" rx="3" fill="var(--panel)" stroke="var(--border-soft)" strokeWidth="0.5" />
+      <text x="18" y="108" fontSize="6" style={{ fill: 'var(--ink)' }}>
+        <tspan fontWeight="600">Bathinda=C</tspan> → <tspan fontWeight="600">Moga=C</tspan>
+      </text>
+      <text x="18" y="120" fontSize="5.5" style={{ fill: 'var(--muted)' }}>sup 0.15 · conf 0.71 · lift 1.96</text>
     </svg>
   );
 }
 
-function DashboardMockup() {
+function DashboardMini() {
   return (
-    <svg viewBox="0 0 520 300" className="mockup" aria-label="Dashboard preview">
-      <rect width="520" height="300" rx="6" fill="var(--panel)" stroke="var(--border)" strokeWidth="1" />
-      <text x="20" y="28" fontSize="13" fontWeight="600" style={{ fill: 'var(--ink)' }}>Strata</text>
-      <text x="20" y="44" fontSize="9" style={{ fill: 'var(--muted)' }}>Groundwater levels across Punjab and Rajasthan</text>
-      <rect x="20" y="60" width="140" height="220" rx="4" fill="var(--faint)" stroke="var(--border-soft)" strokeWidth="0.75" />
-      <text x="30" y="78" fontSize="9" fontWeight="500" style={{ fill: 'var(--muted)' }}>Districts</text>
-      {[0, 1, 2, 3, 4].map(i => (
-        <rect key={i} x="28" y={90 + i * 28} width={120} height={20} rx={3}
-          fill={i === 1 ? 'var(--accent-soft)' : 'var(--panel)'} stroke="var(--border-soft)" strokeWidth="0.5" />
+    <svg viewBox="0 0 480 260" className="hero-mock" aria-label="Dashboard preview">
+      <defs>
+        <filter id="shadow" x="-4%" y="-4%" width="108%" height="112%">
+          <feDropShadow dx="0" dy="2" stdDeviation="6" floodOpacity="0.08" />
+        </filter>
+      </defs>
+      <rect width="480" height="260" rx="8" fill="var(--panel)" filter="url(#shadow)" stroke="var(--border)" strokeWidth="0.75" />
+      <text x="20" y="26" fontSize="14" fontWeight="700" style={{ fill: 'var(--ink)' }}>Strata</text>
+      <text x="20" y="40" fontSize="8" style={{ fill: 'var(--muted)' }}>Groundwater levels across Punjab and Rajasthan</text>
+      <rect x="16" y="52" width="120" height="196" rx="4" fill="var(--faint)" stroke="var(--border-soft)" strokeWidth="0.5" />
+      <text x="24" y="68" fontSize="8" fontWeight="500" style={{ fill: 'var(--muted)' }}>Districts</text>
+      {['Ludhiana', 'Patiala', 'Amritsar', 'Jalandhar', 'Bathinda'].map((d, i) => (
+        <g key={d}>
+          <rect x="22" y={76 + i * 26} width={104} height={18} rx={3}
+            fill={i === 1 ? 'var(--accent-soft)' : 'var(--panel)'} stroke={i === 1 ? 'var(--accent)' : 'var(--border-soft)'} strokeWidth={i === 1 ? '0.75' : '0.4'} />
+          <text x="28" y={88 + i * 26} fontSize="7" fontWeight={i === 1 ? '600' : '400'}
+            style={{ fill: i === 1 ? 'var(--accent)' : 'var(--ink)' }}>{d}</text>
+        </g>
       ))}
-      <text x="38" y="104" fontSize="8" style={{ fill: 'var(--ink)' }}>Ludhiana</text>
-      <text x="38" y="132" fontSize="8" fontWeight="600" style={{ fill: 'var(--accent)' }}>Patiala</text>
-      <text x="38" y="160" fontSize="8" style={{ fill: 'var(--ink)' }}>Amritsar</text>
-      <text x="38" y="188" fontSize="8" style={{ fill: 'var(--ink)' }}>Jalandhar</text>
-      <text x="38" y="216" fontSize="8" style={{ fill: 'var(--ink)' }}>Bathinda</text>
-      <rect x="175" y="60" width="210" height="220" rx="4" fill="var(--panel)" stroke="var(--border-soft)" strokeWidth="0.75" />
-      <text x="185" y="78" fontSize="9" fontWeight="500" style={{ fill: 'var(--muted)' }}>Station overview</text>
-      <text x="185" y="100" fontSize="11" fontWeight="600" style={{ fill: 'var(--ink)' }}>Patiala — PB-PTL-0042</text>
-      <polyline points="185,160 210,155 235,158 260,148 285,152 310,145 335,140 360,135 380,130"
+      <rect x="148" y="52" width="196" height="196" rx="4" fill="var(--panel)" stroke="var(--border-soft)" strokeWidth="0.5" />
+      <text x="158" y="68" fontSize="8" fontWeight="500" style={{ fill: 'var(--muted)' }}>Station overview</text>
+      <text x="158" y="86" fontSize="10" fontWeight="600" style={{ fill: 'var(--ink)' }}>Patiala — PB-PTL-0042</text>
+      <polyline points="158,130 178,126 198,128 218,120 238,122 258,118 278,114 298,110 318,106 334,102"
         fill="none" stroke="var(--chart-line)" strokeWidth="1.5" />
-      <polyline points="360,130 375,126 385,122"
+      <polyline points="318,106 330,100 340,96"
         fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeDasharray="3 2" />
-      <rect x="185" y="190" width="80" height="18" rx="9" fill="var(--crit-bg)" />
-      <text x="205" y="203" fontSize="8" fontWeight="500" style={{ fill: 'var(--crit-tx)' }}>72.3% Elevated</text>
-      <text x="185" y="230" fontSize="8" style={{ fill: 'var(--muted)' }}>Depth (m) — larger is deeper</text>
-      <text x="185" y="260" fontSize="8" style={{ fill: 'var(--muted)' }}>Observed — · Forecast - -</text>
-      <rect x="400" y="60" width="100" height="220" rx="4" fill="var(--faint)" stroke="var(--border-soft)" strokeWidth="0.75" />
-      <text x="410" y="78" fontSize="9" fontWeight="500" style={{ fill: 'var(--muted)' }}>Alerts</text>
-      {[0, 1, 2].map(i => (
-        <rect key={i} x="408" y={90 + i * 40} width={84} height={32} rx={3}
-          fill="var(--panel)" stroke="var(--border-soft)" strokeWidth="0.5" />
+      <rect x="158" y="150" width="68" height="16" rx="8" fill="var(--crit-bg)" />
+      <text x="170" y="161" fontSize="7" fontWeight="500" style={{ fill: 'var(--crit-tx)' }}>72.3%</text>
+      <text x="158" y="180" fontSize="7" style={{ fill: 'var(--muted)' }}>Depth (m) — larger is deeper</text>
+      <text x="158" y="194" fontSize="7" style={{ fill: 'var(--muted)' }}>Observed — · Forecast - -</text>
+      <text x="158" y="220" fontSize="7" style={{ fill: 'var(--muted)' }}>Median depth</text>
+      <text x="220" y="220" fontSize="7" fontWeight="600" style={{ fill: 'var(--ink)' }}>18.4 m</text>
+      <rect x="356" y="52" width="108" height="196" rx="4" fill="var(--faint)" stroke="var(--border-soft)" strokeWidth="0.5" />
+      <text x="364" y="68" fontSize="8" fontWeight="500" style={{ fill: 'var(--muted)' }}>Alerts</text>
+      {['PB-AMR-0018', 'RJ-JAI-0007', 'RJ-JDR-0031'].map((s, i) => (
+        <g key={s}>
+          <rect x="362" y={76 + i * 38} width={96} height={30} rx={3} fill="var(--panel)" stroke="var(--border-soft)" strokeWidth="0.4" />
+          <text x="368" y={88 + i * 38} fontSize="6" fontWeight="600" style={{ fill: 'var(--ink)' }}>{s}</text>
+          <text x="368" y={98 + i * 38} fontSize="5.5" style={{ fill: 'var(--muted)' }}>{['Amritsar', 'Jaipur', 'Jodhpur'][i]}</text>
+        </g>
       ))}
-      <text x="415" y="106" fontSize="7" style={{ fill: 'var(--ink)' }}>PB-AMR-0018</text>
-      <text x="415" y="116" fontSize="6.5" style={{ fill: 'var(--muted)' }}>Amritsar · 1.2 m/yr</text>
-      <text x="415" y="146" fontSize="7" style={{ fill: 'var(--ink)' }}>RJ-JAI-0007</text>
-      <text x="415" y="156" fontSize="6.5" style={{ fill: 'var(--muted)' }}>Jaipur · 0.8 m/yr</text>
-      <text x="415" y="186" fontSize="7" style={{ fill: 'var(--ink)' }}>RJ-JDR-0031</text>
-      <text x="415" y="196" fontSize="6.5" style={{ fill: 'var(--muted)' }}>Jodhpur · 2.1 m/yr</text>
     </svg>
   );
 }
@@ -114,55 +192,73 @@ export default function Landing({ onOpen }: { onOpen: () => void }) {
   return (
     <div className="landing">
       {/* ── Hero ── */}
-      <section className="hero">
-        <div className="hero-inner">
-          <span className="hero-badge">SIH25068 · Ministry of Jal Shakti</span>
-          <h1>Strata</h1>
-          <p className="hero-sub">
-            Real-time groundwater monitoring for Punjab and Rajasthan.
-            <br />802 stations, 2022–2025 telemetry, ML-powered forecasting.
-          </p>
-          <button className="cta" onClick={onOpen}>Open dashboard →</button>
-          <p className="hero-note">Depth convention: larger = deeper = worse</p>
-        </div>
-        <div className="hero-visual">
-          <DashboardMockup />
+      <section className="sec sec-hero">
+        <div className="sec-content hero-grid">
+          <div className="hero-text">
+            <span className="hero-badge">SIH25068 · Ministry of Jal Shakti</span>
+            <h1>Strata</h1>
+            <p className="hero-sub">
+              Real-time groundwater monitoring for Punjab and Rajasthan. 802 stations, 2022–2025 telemetry, ML-powered forecasting.
+            </p>
+            <button className="cta" onClick={onOpen}>Open dashboard →</button>
+            <p className="hero-note">Depth convention: larger = deeper = worse</p>
+          </div>
+          <div className="hero-visual">
+            <DashboardMini />
+          </div>
         </div>
       </section>
 
       {/* ── About ── */}
-      <section className="about" id="about">
-        <div className="section-inner">
-          <h2>About the project</h2>
-          <p>
-            STRATA is a groundwater resource evaluation system built for the Smart India
-            Hackathon. It ingests real telemetry from CGWB Deep Water Level Recorders
-            across Punjab and Rajasthan, unifies noisy sensor data, and surfaces
-            district-level groundwater status through machine learning — classification,
-            forecasting, anomaly detection, and association mining — in a single
-            browser-based dashboard.
-          </p>
-          <p>
-            The goal: give water-resource managers a clear, immediate picture of
-            which districts are trending toward over-exploitation, which stations
-            are behaving abnormally, and what the next 30 days look like — without
-            digging through spreadsheets.
-          </p>
+      <section className="sec sec-about">
+        <div className="sec-content about-grid">
+          <div className="about-text">
+            <h2>About the project</h2>
+            <p>
+              STRATA is a groundwater resource evaluation system built for the Smart India
+              Hackathon. It ingests real telemetry from CGWB Deep Water Level Recorders
+              across Punjab and Rajasthan, unifies noisy sensor data, and surfaces
+              district-level groundwater status through machine learning.
+            </p>
+            <p>
+              The goal: give water-resource managers a clear, immediate picture of
+              which districts are trending toward over-exploitation, which stations
+              are behaving abnormally, and what the next 30 days look like.
+            </p>
+          </div>
+          <div className="about-stats">
+            <div className="stat-card">
+              <span className="stat-num">802</span>
+              <span className="stat-label">DWLR stations</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-num">~2M</span>
+              <span className="stat-label">rows of telemetry</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-num">2</span>
+              <span className="stat-label">states covered</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-num">4</span>
+              <span className="stat-label">ML techniques</span>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ── Pipeline ── */}
-      <section className="pipeline" id="pipeline">
-        <div className="section-inner">
+      <section className="sec sec-pipeline">
+        <div className="sec-content">
           <h2>How it works</h2>
           <p className="section-lead">Data flows from field sensors through the ML pipeline to your screen.</p>
-          <WireDiagram />
+          <PipelineDiagram />
         </div>
       </section>
 
       {/* ── Features ── */}
-      <section className="features" id="features">
-        <div className="section-inner">
+      <section className="sec sec-features">
+        <div className="sec-content">
           <h2>Features</h2>
           <div className="feature-grid">
             {[
@@ -184,19 +280,20 @@ export default function Landing({ onOpen }: { onOpen: () => void }) {
       </section>
 
       {/* ── Demo ── */}
-      <section className="demo" id="demo">
-        <div className="section-inner">
+      <section className="sec sec-demo">
+        <div className="sec-content">
           <h2>How to use it</h2>
-          <div className="demo-steps">
+          <div className="demo-grid">
             {[
-              { step: '1', title: 'Pick a district', text: 'Use the left panel to filter by state, then click a district. The centre panel loads its overview — station count, median depth, annual decline.' },
-              { step: '2', title: 'Inspect a station', text: 'Click any station row. The centre panel shows its depth trend chart, 30-day forecast (dashed blue), crossing-risk badge, and behaviour cluster.' },
-              { step: '3', title: 'Check anomalies', text: 'The right sidebar lists anomaly alerts — stations flagged by Isolation Forest. Click one to jump to its detail view.' },
-              { step: '4', title: 'Read the rules', text: 'Association rules show how districts co-occur in groundwater categories. Lift > 1 means the pattern is stronger than random.' },
-            ].map((d, i) => (
-              <div className="demo-step" key={i}>
-                <div className="demo-num">{d.step}</div>
-                <div>
+              { step: 1, title: 'Pick a district', text: 'Filter by state in the left panel, then click a district. The centre panel loads its overview — station count, median depth, annual decline.' },
+              { step: 2, title: 'Inspect a station', text: 'Click any station row. The centre panel shows its depth trend chart, 30-day forecast (dashed blue), crossing-risk badge, and behaviour cluster.' },
+              { step: 3, title: 'Check anomalies', text: 'The right sidebar lists anomaly alerts — stations flagged by Isolation Forest. Click one to jump to its detail view.' },
+              { step: 4, title: 'Read the rules', text: 'Association rules show how districts co-occur in groundwater categories. Lift > 1 means the pattern is stronger than random.' },
+            ].map((d) => (
+              <div className="demo-card" key={d.step}>
+                <div className="demo-mock"><StepMockup step={d.step} /></div>
+                <div className="demo-info">
+                  <div className="demo-num">{d.step}</div>
                   <h3>{d.title}</h3>
                   <p>{d.text}</p>
                 </div>
@@ -207,8 +304,8 @@ export default function Landing({ onOpen }: { onOpen: () => void }) {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="faq-section" id="faq">
-        <div className="section-inner">
+      <section className="sec sec-faq">
+        <div className="sec-content">
           <h2>Frequently asked questions</h2>
           <div className="faq-list">
             {FAQ.map((f, i) => (
