@@ -28,18 +28,18 @@ function TrendChart({ series, forecast }: {
   const last = forecast.length ? forecast[forecast.length - 1].date.slice(0, 10) : '';
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" className="chart" role="img" aria-label="Depth trend">
-      <text x={P} y={16} fontSize="11" fill="#6F6A5E">
-        Depth (m) — larger is deeper · range <tspan className="mono">{lo.toFixed(0)}–{hi.toFixed(0)}</tspan>
+      <text x={P} y={16} fontSize="11" style={{ fill: 'var(--muted)' }}>
+        Depth (m) — larger is deeper · range {lo.toFixed(0)}–{hi.toFixed(0)}
       </text>
       {[0.25, 0.5, 0.75].map(t => (
-        <line key={t} x1={P} x2={W - P} y1={P + t * (H - 2 * P)} y2={P + t * (H - 2 * P)} stroke="#EFEBE3" strokeWidth="1" />
+        <line key={t} x1={P} x2={W - P} y1={P + t * (H - 2 * P)} y2={P + t * (H - 2 * P)} style={{ stroke: 'var(--chart-grid)' }} strokeWidth="1" />
       ))}
-      <polyline points={line(pts.map(p => p.depth))} fill="none" stroke="#44403C" strokeWidth="1.75" />
+      <polyline points={line(pts.map(p => p.depth))} fill="none" style={{ stroke: 'var(--chart-line)' }} strokeWidth="1.75" />
       {forecast.length > 0 && (
-        <polyline points={fline} fill="none" stroke="#2F6BFF" strokeWidth="1.75" strokeDasharray="5 4" />
+        <polyline points={fline} fill="none" style={{ stroke: 'var(--accent)' }} strokeWidth="1.75" strokeDasharray="5 4" />
       )}
-      <text x={P} y={H - 8} fontSize="11" fill="#6F6A5E">
-        Observed <tspan fill="#44403C">—</tspan> · 30-day forecast <tspan fill="#2F6BFF">- -</tspan>
+      <text x={P} y={H - 8} fontSize="11" style={{ fill: 'var(--muted)' }}>
+        Observed <tspan style={{ fill: 'var(--chart-line)' }}>—</tspan> · 30-day forecast <tspan style={{ fill: 'var(--accent)' }}>- -</tspan>
         {last ? ` · through ${last}` : ''}
       </text>
     </svg>
@@ -56,6 +56,17 @@ export default function App() {
   const [similar, setSimilar] = useState<{ station: string; distance: number }[]>([]);
   const [rules, setRules] = useState<Awaited<ReturnType<typeof api.rules>>>([]);
   const [alerts, setAlerts] = useState<Awaited<ReturnType<typeof api.alerts>>>([]);
+  const [theme, setTheme] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem('strata-theme');
+      if (saved) return saved;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } catch { return 'light'; }
+  });
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem('strata-theme', theme); } catch { /* private mode */ }
+  }, [theme]);
 
   useEffect(() => {
     api.summary().then(setSummary).catch(() => setSummary(null));
@@ -79,8 +90,16 @@ export default function App() {
   return (
     <>
       <header>
-        <h1>Strata</h1>
-        <p className="sub">Groundwater resource evaluation · SIH25068 · Ministry of Jal Shakti · Punjab + Rajasthan DWLR telemetry, 2022–2025</p>
+        <div className="head-row">
+          <div>
+            <h1>Strata</h1>
+            <p className="sub">Groundwater resource evaluation · SIH25068 · Ministry of Jal Shakti · Punjab + Rajasthan DWLR telemetry, 2022–2025</p>
+          </div>
+          <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label="Toggle dark mode">
+            {theme === 'dark' ? '○ Light' : '● Dark'}
+          </button>
+        </div>
         {summary && (
           <p className="meta">
             <strong className="mono">{summary.stations}</strong> stations ·{' '}

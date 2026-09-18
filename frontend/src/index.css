@@ -24,14 +24,36 @@
   --semi-bg: #FAF0D3; --semi-tx: #8A6A00;
   --crit-bg: #FBE7E8; --crit-tx: #B42318;
   --oe-bg: #F6DEE2; --oe-tx: #8C1D2F;
+  --chart-line: #44403C;
+  --chart-grid: #EFEBE3;
   --radius: 8px;
+  color-scheme: light;
+}
+/* dark: same warm register, inverted — charcoal umber, softened pills, lifted accent */
+[data-theme="dark"] {
+  --bg: #14120F;
+  --panel: #1D1B17;
+  --border: #322F28;
+  --border-soft: #28251F;
+  --ink: #ECE7DB;
+  --muted: #A29A89;
+  --faint: #24221C;
+  --accent: #6B96FF;
+  --accent-soft: #1D2742;
+  --safe-bg: #12291C; --safe-tx: #7BD9A4;
+  --semi-bg: #332806; --semi-tx: #E3C15C;
+  --crit-bg: #3D181B; --crit-tx: #F19994;
+  --oe-bg: #421B22; --oe-tx: #F0A8B4;
+  --chart-line: #CFC8B8;
+  --chart-grid: #2A2721;
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
-  font-family: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  font-size: 14px; line-height: 1.55;
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13.5px; line-height: 1.55; letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
 }
 #root { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
@@ -46,6 +68,9 @@ header h1 { margin: 0; font-size: 24px; font-weight: 650; letter-spacing: -0.02e
 header .sub { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 header .meta { margin: 12px 0 0; color: var(--muted); font-size: 12.5px; }
 header .meta strong { color: var(--ink); font-weight: 600; }
+.head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.theme-toggle { flex: 0 0 auto; font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+.theme-toggle:hover { color: var(--ink); }
 .layout {
   flex: 1 1 auto; min-height: 0;
   display: grid; grid-template-columns: 300px minmax(0, 1fr) 320px;
@@ -122,5 +147,6 @@ footer {
 .neg { color: var(--oe-tx); font-weight: 600; }
 .pos { color: var(--safe-tx); font-weight: 600; }
 .muted { color: var(--muted); }
-.chart { border: 1px solid var(--border-soft); border-radius: 6px; background: #fff; }
+.chart { border: 1px solid var(--border-soft); border-radius: 6px; background: var(--panel); }
 .empty { color: var(--muted); font-size: 13px; }
+
