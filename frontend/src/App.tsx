@@ -4,36 +4,44 @@ import { api } from './api';
 import type { District, DistrictDetail, StationDetail } from './api';
 
 const LABEL_HINT: Record<string, string> = {
-  safe: 'SAFE', semi_critical: 'SEMI-CRIT', critical: 'CRITICAL', over_exploited: 'OVER-EXPLOITED',
+  safe: 'Safe', semi_critical: 'Semi-critical', critical: 'Critical', over_exploited: 'Over-exploited',
 };
 
-function Chip({ label }: { label: string }) {
-  return <span className={`chip ${label}`}>{LABEL_HINT[label] ?? label}</span>;
+function Pill({ label }: { label: string }) {
+  return <span className={`pill ${label}`}>{LABEL_HINT[label] ?? label}</span>;
 }
 
 function TrendChart({ series, forecast }: {
   series: { date: string; depth: number }[];
   forecast: { date: string; actual: number; predicted: number }[];
 }) {
-  const W = 640, H = 220, P = 32;
+  const W = 640, H = 220, P = 36;
   const pts = series.slice(-160);
   const all = [...pts.map(p => p.depth), ...forecast.map(f => f.predicted)];
-  if (!pts.length) return <p>NO SERIES DATA</p>;
+  if (!pts.length) return <p className="empty">No series data for this station.</p>;
   const lo = Math.min(...all), hi = Math.max(...all), span = hi - lo || 1;
   const X = (i: number, n: number) => P + (i / Math.max(1, n - 1)) * (W - 2 * P);
   const Y = (v: number) => H - P - ((v - lo) / span) * (H - 2 * P);
   const line = (vals: number[]) => vals.map((v, i) => `${X(i, vals.length)},${Y(v)}`).join(' ');
   const fx = (i: number) => X(pts.length - forecast.length + i, pts.length);
   const fline = forecast.map((f, i) => `${fx(i)},${Y(f.predicted)}`).join(' ');
-  const fdate = forecast.map(f => f.date.slice(0, 10)).join(',');
+  const last = forecast.length ? forecast[forecast.length - 1].date.slice(0, 10) : '';
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ border: '2px solid #111', background: '#fff' }}>
-      <text x={P} y={14} fontSize="10">DEPTH m (LARGER = DEEPER = WORSE) — range {lo.toFixed(0)}–{hi.toFixed(0)}</text>
-      <polyline points={line(pts.map(p => p.depth))} fill="none" stroke="#111" strokeWidth="2" />
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" className="chart" role="img" aria-label="Depth trend">
+      <text x={P} y={16} fontSize="11" fill="#6F6A5E">
+        Depth (m) — larger is deeper · range <tspan className="mono">{lo.toFixed(0)}–{hi.toFixed(0)}</tspan>
+      </text>
+      {[0.25, 0.5, 0.75].map(t => (
+        <line key={t} x1={P} x2={W - P} y1={P + t * (H - 2 * P)} y2={P + t * (H - 2 * P)} stroke="#EFEBE3" strokeWidth="1" />
+      ))}
+      <polyline points={line(pts.map(p => p.depth))} fill="none" stroke="#44403C" strokeWidth="1.75" />
       {forecast.length > 0 && (
-        <polyline points={fline} fill="none" stroke="#ff4d00" strokeWidth="2" strokeDasharray="5 3" />
+        <polyline points={fline} fill="none" stroke="#2F6BFF" strokeWidth="1.75" strokeDasharray="5 4" />
       )}
-      <text x={P} y={H - 8} fontSize="10">— OBSERVED &nbsp;&nbsp; - - FORECAST (30D) &nbsp;&nbsp; last: {fdate.split(',').pop() ?? ''}</text>
+      <text x={P} y={H - 8} fontSize="11" fill="#6F6A5E">
+        Observed <tspan fill="#44403C">—</tspan> · 30-day forecast <tspan fill="#2F6BFF">- -</tspan>
+        {last ? ` · through ${last}` : ''}
+      </text>
     </svg>
   );
 }
@@ -71,50 +79,59 @@ export default function App() {
   return (
     <>
       <header>
-        <h1><span>STRATA</span> GROUNDWATER RESOURCE EVALUATION</h1>
-        <p>SIH25068 · PUNJAB + RAJASTHAN · DWLR 2022–2025
-          {summary && ` · ${summary.stations} STATIONS / ${summary.districts} DISTRICTS / ${summary.anomalies} ANOMALIES`}</p>
+        <h1>Strata</h1>
+        <p className="sub">Groundwater resource evaluation · SIH25068 · Ministry of Jal Shakti · Punjab + Rajasthan DWLR telemetry, 2022–2025</p>
+        {summary && (
+          <p className="meta">
+            <strong className="mono">{summary.stations}</strong> stations ·{' '}
+            <strong className="mono">{summary.districts}</strong> districts ·{' '}
+            <strong className="mono">{summary.anomalies}</strong> anomalies flagged
+          </p>
+        )}
       </header>
       <div className="layout">
         <div className="panel">
-          <h2>DISTRICTS</h2>
+          <h2>Districts</h2>
           <div className="body">
-            <select value={stateF} onChange={e => setStateF(e.target.value)} style={{ width: '100%', marginBottom: 8 }}>
-              <option value="">ALL STATES</option>
-              <option value="punjab">PUNJAB</option>
-              <option value="rajasthan">RAJASTHAN</option>
+            <select value={stateF} onChange={e => setStateF(e.target.value)} style={{ width: '100%', marginBottom: 10 }}>
+              <option value="">All states</option>
+              <option value="punjab">Punjab</option>
+              <option value="rajasthan">Rajasthan</option>
             </select>
             {districts.map(d => (
               <button key={d.state + d.district} className={`rowbtn${selD?.district === d.district ? ' active' : ''}`}
                 onClick={() => setSelD({ state: d.state, district: d.district })}>
-                <Chip label={d.label} /> {d.district} <small>({d.n_stations})</small>
+                <Pill label={d.label} /> {d.district}{' '}
+                <span className="muted mono" style={{ fontSize: 11 }}>{d.n_stations} wells</span>
               </button>
             ))}
           </div>
         </div>
 
         <div className="panel">
-          <h2>{station ? 'STATION' : detail ? 'DISTRICT' : 'SELECT A DISTRICT'}</h2>
+          <h2>{station ? 'Station' : detail ? 'District overview' : 'Overview'}</h2>
           <div className="body">
-            {!detail && <p>Pick a district on the left. Pick a station to see trend, forecast, crossing risk, similar wells, anomaly flags.</p>}
+            {!detail && (
+              <p className="empty">Select a district to inspect its groundwater status, then open a station for trend, forecast, crossing risk, and similar wells.</p>
+            )}
             {detail && !station && (
               <>
-                <h3 style={{ margin: '0 0 4px' }}>{detail.district} <Chip label={detail.label} /></h3>
+                <h3>{detail.district} <Pill label={detail.label} /></h3>
                 <dl className="kv">
-                  <dt>stations</dt><dd>{detail.n_stations}</dd>
-                  <dt>median depth</dt><dd>{detail.median_depth?.toFixed(1)} m</dd>
-                  <dt>annual decline</dt><dd className={detail.annual_decline > 0 ? 'neg' : 'pos'}>{detail.annual_decline?.toFixed(2)} m/yr</dd>
-                  <dt>deepening share</dt><dd>{(detail.frac_deepening * 100)?.toFixed(0)}%</dd>
+                  <dt>Monitoring wells</dt><dd className="mono">{detail.n_stations}</dd>
+                  <dt>Median depth</dt><dd><span className="mono">{detail.median_depth?.toFixed(1)} m</span></dd>
+                  <dt>Annual change</dt><dd className={detail.annual_decline > 0 ? 'neg' : 'pos'}><span className="mono">{detail.annual_decline?.toFixed(2)} m/yr</span></dd>
+                  <dt>Deepening share</dt><dd><span className="mono">{(detail.frac_deepening * 100)?.toFixed(0)}%</span></dd>
                 </dl>
                 <table>
-                  <thead><tr><th>STATION</th><th>DEPTH</th><th>Δ/yr</th><th>FLAG</th></tr></thead>
+                  <thead><tr><th>Station</th><th>Depth</th><th>Δ / yr</th><th>Status</th></tr></thead>
                   <tbody>
                     {detail.stations.map(s => (
                       <tr key={s.station}>
-                        <td><button className="rowbtn" onClick={() => openStation(s.station)}>{s.station}</button></td>
-                        <td>{s.median_depth?.toFixed(1)}</td>
-                        <td className={s.annual_decline > 0 ? 'neg' : 'pos'}>{s.annual_decline?.toFixed(2)}</td>
-                        <td>{s.if_flag ? '⚠ ANOMALY' : `C${s.kmeans}`}</td>
+                        <td><button className="rowbtn mono" style={{ margin: 0 }} onClick={() => openStation(s.station)}>{s.station}</button></td>
+                        <td className="mono">{s.median_depth?.toFixed(1)}</td>
+                        <td className={s.annual_decline > 0 ? 'neg mono' : 'pos mono'}>{s.annual_decline?.toFixed(2)}</td>
+                        <td>{s.if_flag ? <span className="pill critical">Anomaly</span> : <span className="muted">Cluster {s.kmeans}</span>}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -123,24 +140,25 @@ export default function App() {
             )}
             {station && (
               <>
-                <button onClick={() => setStation(null)}>← BACK TO {station.district}</button>
-                <h3 style={{ margin: '8px 0 4px' }}>{station.station} <Chip label={station.label} /></h3>
+                <button className="back" onClick={() => setStation(null)}>← Back to {station.district}</button>
+                <h3 className="mono" style={{ fontSize: 15 }}>{station.station} <Pill label={station.label} /></h3>
                 <dl className="kv">
-                  <dt>median depth</dt><dd>{station.median_depth?.toFixed(1)} m</dd>
-                  <dt>annual decline</dt><dd className={station.annual_decline > 0 ? 'neg' : 'pos'}>{station.annual_decline?.toFixed(2)} m/yr</dd>
-                  <dt>monsoon Δ</dt><dd>{station.monsoon_delta?.toFixed(2)} m (neg = recovery)</dd>
-                  <dt>cluster</dt><dd>C{station.kmeans} archetype</dd>
-                  <dt>anomaly</dt><dd>{station.if_flag ? `⚠ FLAGGED (score ${station.if_score?.toFixed(2)})` : 'none'}</dd>
+                  <dt>Median depth</dt><dd><span className="mono">{station.median_depth?.toFixed(1)} m</span></dd>
+                  <dt>Annual change</dt><dd className={station.annual_decline > 0 ? 'neg' : 'pos'}><span className="mono">{station.annual_decline?.toFixed(2)} m/yr</span></dd>
+                  <dt>Monsoon response</dt><dd><span className="mono">{station.monsoon_delta?.toFixed(2)} m</span> <span className="muted">(negative = recovery)</span></dd>
+                  <dt>Behaviour cluster</dt><dd>Archetype {station.kmeans}</dd>
+                  <dt>Anomaly screen</dt><dd>{station.if_flag ? <span className="pill critical">Flagged · score <span className="mono">{station.if_score?.toFixed(2)}</span></span> : <span className="muted">No flag</span>}</dd>
                   <dt>90-day crossing risk</dt>
-                  <dd><span className={station.risk >= 0.235 ? 'risk-high' : 'risk-low'}>
-                    {(station.risk * 100).toFixed(1)}% {station.risk >= 0.235 ? 'HIGH' : 'LOW'}</span></dd>
+                  <dd><span className={`pill ${station.risk >= 0.235 ? 'risk-high' : 'risk-low'}`}>
+                    <span className="mono">{(station.risk * 100).toFixed(1)}%</span> · {station.risk >= 0.235 ? 'Elevated' : 'Low'}</span></dd>
                 </dl>
                 <TrendChart series={station.series} forecast={station.forecast} />
-                <h4>SIMILAR STATIONS (EUCLIDEAN, BEHAVIOUR SPACE)</h4>
+                <h4>Similar stations</h4>
+                <p className="muted" style={{ fontSize: 12, margin: '0 0 8px' }}>Nearest neighbours in behaviour space (Euclidean, standardised features).</p>
                 <table>
-                  <thead><tr><th>STATION</th><th>DIST</th></tr></thead>
+                  <thead><tr><th>Station</th><th>Distance</th></tr></thead>
                   <tbody>{similar.map(s => (
-                    <tr key={s.station}><td><button className="rowbtn" onClick={() => openStation(s.station)}>{s.station}</button></td><td>{s.distance}</td></tr>
+                    <tr key={s.station}><td><button className="rowbtn mono" style={{ margin: 0 }} onClick={() => openStation(s.station)}>{s.station}</button></td><td className="mono">{s.distance}</td></tr>
                   ))}</tbody>
                 </table>
               </>
@@ -149,31 +167,31 @@ export default function App() {
         </div>
 
         <div>
-          <div className="panel" style={{ marginBottom: 12 }}>
-            <h2>CRITICAL RULES (APRIORI)</h2>
+          <div className="panel" style={{ marginBottom: 20 }}>
+            <h2>Association rules</h2>
             <div className="body">
               {rules.slice(0, 6).map((r, i) => (
                 <div className="rule" key={i}>
-                  <div>{r.antecedents} → <b>{r.consequents}</b></div>
-                  <div>sup {r.support} · conf {r.confidence} · <span className="lift">lift {r.lift}</span></div>
+                  <div><span className="mono">{r.antecedents}</span> → <strong>{r.consequents}</strong></div>
+                  <div className="metrics">support <b className="mono">{r.support}</b> · confidence <b className="mono">{r.confidence}</b> · lift <b className="mono">{r.lift}</b></div>
                 </div>
               ))}
             </div>
           </div>
           <div className="panel">
-            <h2>ANOMALY ALERTS ({alerts.length})</h2>
+            <h2>Anomaly alerts <span className="muted mono">{alerts.length}</span></h2>
             <div className="body">
               {alerts.slice(0, 10).map(a => (
                 <div className="alert" key={a.station}>
-                  <button className="rowbtn" onClick={() => openStation(a.station)}>{a.station}</button>
-                  <small>{a.district} · Δ {a.annual_decline?.toFixed(2)} m/yr</small>
+                  <button className="rowbtn mono" style={{ margin: '0 0 2px' }} onClick={() => openStation(a.station)}>{a.station}</button>
+                  <small>{a.district} · <span className="mono">{a.annual_decline?.toFixed(2)} m/yr</span></small>
                 </div>
               ))}
             </div>
           </div>
         </div>
       </div>
-      <footer>STRATA · SIH25068 · depth convention: larger = deeper = worse · forecast = 30-day linear vs persistence · risk = MLP P(cross 35 m in 90 d), threshold 0.235</footer>
+      <footer>Strata · SIH25068 · Depth convention: larger means deeper and worse · Forecast: 30-day linear model vs persistence baseline · Risk: P(depth crosses 35 m within 90 days), alert threshold 0.235</footer>
     </>
   );
 }
