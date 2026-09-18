@@ -27,32 +27,47 @@
   --radius: 8px;
 }
 * { box-sizing: border-box; }
+html, body { height: 100%; }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
   font-family: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: 14px; line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
+#root { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 .mono {
   font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.92em; letter-spacing: -0.01em;
 }
 header {
-  padding: 28px 32px 20px; max-width: 1440px; margin: 0 auto;
+  flex: 0 0 auto; padding: 20px 32px 14px; max-width: 1440px; margin: 0 auto; width: 100%;
 }
 header h1 { margin: 0; font-size: 24px; font-weight: 650; letter-spacing: -0.02em; }
 header .sub { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 header .meta { margin: 12px 0 0; color: var(--muted); font-size: 12.5px; }
 header .meta strong { color: var(--ink); font-weight: 600; }
 .layout {
+  flex: 1 1 auto; min-height: 0;
   display: grid; grid-template-columns: 300px minmax(0, 1fr) 320px;
-  gap: 20px; padding: 4px 32px 32px; max-width: 1440px; margin: 0 auto;
-  align-items: start;
+  gap: 20px; padding: 4px 32px 20px; max-width: 1440px; margin: 0 auto; width: 100%;
+  align-items: stretch;
 }
-@media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+/* independent column scroll: each column scrolls on its own, neighbours stay put */
+.layout > * { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.layout > .side-stack { display: flex; flex-direction: column; gap: 20px; }
+.panel > h2 {
+  position: sticky; top: 0; background: var(--panel); z-index: 5;
+}
+@media (max-width: 1100px) {
+  #root { height: auto; overflow: visible; }
+  .layout { grid-template-columns: 1fr; }
+  .layout > * { overflow: visible; }
+}
 .panel {
   background: var(--panel); border: 1px solid var(--border);
-  border-radius: var(--radius); overflow: hidden;
+  border-radius: var(--radius);
+  /* no overflow:hidden: grid children are the scroll containers and
+     sticky h2 headers must stick within them */
 }
 .panel > h2 {
   margin: 0; padding: 12px 18px 10px; font-size: 12.5px; font-weight: 600;
@@ -99,7 +114,8 @@ h4 { font-size: 12.5px; font-weight: 600; color: var(--muted); margin: 20px 0 8p
 .back { margin-bottom: 10px; color: var(--muted); }
 .back:hover { color: var(--ink); }
 footer {
-  max-width: 1440px; margin: 0 auto; padding: 16px 32px 32px;
+  flex: 0 0 auto; max-width: 1440px; margin: 0 auto; width: 100%;
+  padding: 10px 32px 14px;
   color: var(--muted); font-size: 12px;
   border-top: 1px solid var(--border-soft);
 }

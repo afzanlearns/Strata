@@ -166,8 +166,8 @@ export default function App() {
           </div>
         </div>
 
-        <div>
-          <div className="panel" style={{ marginBottom: 20 }}>
+        <div className="side-stack">
+          <div className="panel">
             <h2>Association rules</h2>
             <div className="body">
               {rules.slice(0, 6).map((r, i) => (
