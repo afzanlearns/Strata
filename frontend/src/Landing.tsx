@@ -1,41 +1,38 @@
 import { useState } from 'react';
 import './landing.css';
 
-const QUESTIONS = [
+const FAQ = [
   {
-    q: 'What does a larger depth-to-water value indicate?',
-    opts: ['Closer to surface', 'Deeper / worse', 'More rainfall', 'Cleaner water'],
-    ans: 1,
+    q: 'What data does STRATA use?',
+    a: 'Real-time telemetry from CGWB Deep Water Level Recorders (DWLR) across Punjab and Rajasthan — approximately 802 stations, 2 million rows, spanning September 2022 to December 2025.',
   },
   {
-    q: 'How far ahead does the dashboard forecast water levels?',
-    opts: ['7 days', '30 days', '90 days', '1 year'],
-    ans: 1,
+    q: 'Why is "larger depth" worse?',
+    a: 'Depth-to-water measures how far below the surface the water table sits. A larger number means the water is deeper — the aquifer is more depleted. The sign convention is locked: larger = deeper = worse.',
   },
   {
-    q: 'What does the crossing-risk percentage represent?',
-    opts: [
-      'Chance rain exceeds flood level',
-      'P(depth crosses 35 m within 90 days)',
-      'Probability of sensor failure',
-      'Share of wells classified as critical',
-    ],
-    ans: 1,
+    q: 'How does the 30-day forecast work?',
+    a: 'A simple linear trend projected forward 30 days, compared against a persistence baseline (yesterday\'s depth = tomorrow\'s). The high R² (0.994) is a "persistence mirage" — water levels change slowly, so yesterday\'s value is already a strong predictor.',
   },
   {
-    q: 'Which ML model is used for anomaly detection?',
-    opts: ['Linear Regression', 'k-Nearest Neighbours', 'Isolation Forest', 'Apriori'],
-    ans: 2,
+    q: 'What does the crossing-risk percentage mean?',
+    a: 'It\'s the probability that a station\'s depth will cross 35 metres within 90 days, estimated by an MLP neural network. The alert threshold is 0.235 — above that, the badge turns red ("Elevated").',
   },
   {
-    q: 'What does the association-rule mining reveal?',
-    opts: [
-      'Sensor malfunction patterns',
-      'How districts co-occur in the same groundwater category across seasons',
-      'Rainfall prediction accuracy',
-      'Optimal well-drilling depth',
-    ],
-    ans: 1,
+    q: 'What are quarantine flags?',
+    a: 'Readings flagged as sensor-level issues: `mad_outlier` (statistical outlier), `nonphysical` (impossible value), `datum_shift` (abrupt jump), `gap` (missing data). Rows are never deleted — the `qflag` column makes them queryable so you can still see what was flagged and why.',
+  },
+  {
+    q: 'What do the association rules show?',
+    a: 'How districts co-occur in the same groundwater category (Safe / Semi-critical / Critical / Over-exploited) across Kharif and Rabi seasons. Lift > 1 means the pattern is stronger than random chance — useful for regional planning.',
+  },
+  {
+    q: 'How are the ML techniques validated?',
+    a: 'Classification (kNN, Decision Tree, Naive Bayes) uses train/test split with macro-F1 scoring. Regression compares against a persistence baseline. Clustering uses silhouette score and Adjusted Rand Index against hierarchical clustering. Association rules are filtered by lift > 1.',
+  },
+  {
+    q: 'Can I switch between light and dark mode?',
+    a: 'Yes — the toggle is in the top-right corner of the dashboard. Your preference is saved in localStorage and respects your OS setting on first visit.',
   },
 ];
 
@@ -112,10 +109,7 @@ function DashboardMockup() {
 }
 
 export default function Landing({ onOpen }: { onOpen: () => void }) {
-  const [active, setActive] = useState<number | null>(null);
-  const [answers, setAnswers] = useState<number[]>([]);
-  const [submitted, setSubmitted] = useState(false);
-  const score = submitted ? answers.reduce((s, a, i) => s + (a === QUESTIONS[i].ans ? 1 : 0), 0) : 0;
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
     <div className="landing">
@@ -212,42 +206,21 @@ export default function Landing({ onOpen }: { onOpen: () => void }) {
         </div>
       </section>
 
-      {/* ── Questionnaire ── */}
-      <section className="quiz" id="quiz">
+      {/* ── FAQ ── */}
+      <section className="faq-section" id="faq">
         <div className="section-inner">
-          <h2>Quick check</h2>
-          <p className="section-lead">Five questions on what the dashboard shows.</p>
-          <div className="quiz-grid">
-            {QUESTIONS.map((q, qi) => (
-              <div className="quiz-card" key={qi}>
-                <p className="quiz-q"><span className="quiz-num">{qi + 1}</span> {q.q}</p>
-                <div className="quiz-opts">
-                  {q.opts.map((opt, oi) => {
-                    let cls = 'quiz-opt';
-                    if (submitted && oi === q.ans) cls += ' correct';
-                    if (submitted && answers[qi] === oi && oi !== q.ans) cls += ' wrong';
-                    return (
-                      <button key={oi} className={cls}
-                        disabled={submitted}
-                        onClick={() => {
-                          setActive(qi);
-                          setAnswers(prev => { const next = [...prev]; next[qi] = oi; return next; });
-                        }}>
-                        {opt}
-                      </button>
-                    );
-                  })}
-                </div>
+          <h2>Frequently asked questions</h2>
+          <div className="faq-list">
+            {FAQ.map((f, i) => (
+              <div className={`faq-item${openFaq === i ? ' open' : ''}`} key={i}>
+                <button className="faq-q" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                  <span>{f.q}</span>
+                  <span className="faq-icon">{openFaq === i ? '−' : '+'}</span>
+                </button>
+                {openFaq === i && <p className="faq-a">{f.a}</p>}
               </div>
             ))}
           </div>
-          {!submitted ? (
-            <button className="cta" style={{ marginTop: 24 }} onClick={() => setSubmitted(true)}>
-              Check answers
-            </button>
-          ) : (
-            <p className="quiz-result">You scored <strong>{score}</strong> out of {QUESTIONS.length}.</p>
-          )}
         </div>
       </section>
 
