@@ -186,11 +186,21 @@ function DashboardMini() {
   );
 }
 
-export default function Landing({ onOpen }: { onOpen: () => void }) {
+export default function Landing({ onOpen, theme, setTheme }: { onOpen: () => void; theme: string; setTheme: (t: string) => void }) {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
     <div className="landing">
+      {/* ── Nav ── */}
+      <nav className="land-nav">
+        <span className="land-nav-title">Strata</span>
+        <div className="land-nav-right">
+          <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label="Toggle dark mode">
+            {theme === 'dark' ? '○ Light' : '● Dark'}
+          </button>
+        </div>
+      </nav>
       {/* ── Hero ── */}
       <section className="sec sec-hero">
         <div className="sec-content hero-grid">

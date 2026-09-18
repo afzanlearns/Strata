@@ -2,18 +2,44 @@
 .landing {
   height: 100dvh;
   overflow-y: auto;
-  scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
 }
+
+/* ── Nav ── */
+.land-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 40px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border-soft);
+}
+.land-nav-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.land-nav .theme-toggle {
+  font-size: 12.5px;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.land-nav .theme-toggle:hover { color: var(--green-mid); border-color: var(--green-border); }
 
 /* ── Full-viewport sections ── */
 .sec {
   min-height: 100dvh;
-  scroll-snap-align: start;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  padding: 60px 40px;
 }
 .sec-content {
   width: 100%;
@@ -339,8 +365,8 @@
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
-  .sec { padding: 32px 24px; scroll-snap-align: none; }
-  .landing { scroll-snap-type: none; }
+  .sec { padding: 40px 24px; }
+  .landing { }
   .hero-grid { grid-template-columns: 1fr; gap: 32px; }
   .hero-text h1 { font-size: 40px; }
   .hero-visual { order: -1; }

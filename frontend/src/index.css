@@ -73,6 +73,7 @@ header {
   flex: 0 0 auto; padding: 20px 32px 14px; max-width: 1440px; margin: 0 auto; width: 100%;
 }
 header h1 { margin: 0; font-size: 24px; font-weight: 650; letter-spacing: -0.02em; }
+header h1:hover { color: var(--green-mid); }
 header .sub { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 header .meta { margin: 12px 0 0; color: var(--muted); font-size: 12.5px; }
 header .meta strong { color: var(--ink); font-weight: 600; }
@@ -124,8 +125,9 @@ button, select {
   font: inherit; color: var(--ink); background: var(--panel);
   border: 1px solid var(--border); border-radius: 6px;
   padding: 6px 10px; cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
 }
-button:hover { border-color: var(--green-border); background: var(--green-tint); }
+button:hover, select:hover { border-color: var(--green-border); background: var(--green-tint); }
 .rowbtn { display: block; width: 100%; text-align: left; margin-bottom: 6px; }
 .rowbtn.active {
   background: var(--accent-soft); border-color: var(--accent); color: var(--ink);
@@ -135,7 +137,7 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: f
 th, td { padding: 7px 8px; text-align: left; border-bottom: 1px solid var(--border-soft); overflow-wrap: break-word; word-break: break-word; }
 th { color: var(--muted); font-weight: 550; font-size: 12px; }
 tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover td { background: var(--faint); }
+tbody tr:hover td { background: var(--green-tint); }
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 12px 0; font-size: 13.5px; overflow-wrap: break-word; word-break: break-word; }
 .kv dt { color: var(--muted); } .kv dd { margin: 0; }
 h3 { font-size: 17px; font-weight: 620; letter-spacing: -0.01em; margin: 0 0 2px; overflow-wrap: break-word; word-break: break-word; }
@@ -153,7 +155,7 @@ footer {
   flex: 0 0 auto; max-width: 1440px; margin: 0 auto; width: 100%;
   padding: 10px 32px 14px;
   color: var(--muted); font-size: 12px;
-  border-top: 1px solid var(--border-soft);
+  border-top: 1px solid var(--green-border);
 }
 .neg { color: var(--oe-tx); font-weight: 600; }
 .pos { color: var(--safe-tx); font-weight: 600; }

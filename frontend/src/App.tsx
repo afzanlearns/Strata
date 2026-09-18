@@ -92,7 +92,7 @@ export default function App() {
   return (
     <>
       {page === 'landing' ? (
-        <Landing onOpen={() => setPage('dashboard')} />
+        <Landing onOpen={() => setPage('dashboard')} theme={theme} setTheme={setTheme} />
       ) : (
         <>
           <header>
