@@ -132,8 +132,8 @@ export default function App() {
                   <dt>cluster</dt><dd>C{station.kmeans} archetype</dd>
                   <dt>anomaly</dt><dd>{station.if_flag ? `⚠ FLAGGED (score ${station.if_score?.toFixed(2)})` : 'none'}</dd>
                   <dt>90-day crossing risk</dt>
-                  <dd><span className={station.risk >= 0.5 ? 'risk-high' : 'risk-low'}>
-                    {(station.risk * 100).toFixed(1)}% {station.risk >= 0.5 ? 'HIGH' : 'LOW'}</span></dd>
+                  <dd><span className={station.risk >= 0.235 ? 'risk-high' : 'risk-low'}>
+                    {(station.risk * 100).toFixed(1)}% {station.risk >= 0.235 ? 'HIGH' : 'LOW'}</span></dd>
                 </dl>
                 <TrendChart series={station.series} forecast={station.forecast} />
                 <h4>SIMILAR STATIONS (EUCLIDEAN, BEHAVIOUR SPACE)</h4>
