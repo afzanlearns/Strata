@@ -11,7 +11,7 @@ import os
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from .db import Session
@@ -125,6 +125,26 @@ def alerts():
     ss = row(Station, if_flag=1)
     return [dict(station=r.station, state=r.state, district=r.district,
                  if_score=round(r.if_score or 0, 3), annual_decline=r.annual_decline) for r in ss]
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon_ico():
+    """Browsers auto-request /favicon.ico. Serve the SVG favicon if present,
+    otherwise return empty 204 so the console doesn't show a 404."""
+    for candidate in (os.path.join(STATIC, "favicon.svg"),
+                      os.path.join(HERE, "..", "frontend", "public", "favicon.svg")):
+        if os.path.isfile(candidate):
+            return FileResponse(candidate, media_type="image/svg+xml")
+    return Response(status_code=204)
+
+
+@app.get("/favicon.svg", include_in_schema=False)
+def favicon_svg():
+    for candidate in (os.path.join(STATIC, "favicon.svg"),
+                      os.path.join(HERE, "..", "frontend", "public", "favicon.svg")):
+        if os.path.isfile(candidate):
+            return FileResponse(candidate, media_type="image/svg+xml")
+    return Response(status_code=204)
 
 
 if os.path.isdir(STATIC):
